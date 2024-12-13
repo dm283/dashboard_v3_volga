@@ -453,7 +453,14 @@ const exportFile = (dataSet, fileName, fileType) => {
   for (let rec of dataSet) {
     let modifiedRec = {}
     for (let field of Object.keys(props.listTableColumns)) {
-      modifiedRec[props.listTableColumns[field]] = rec[field]
+      let fieldName = ''
+      if (typeof(props.listTableColumns[field])=='object') {
+        fieldName = props.listTableColumns[field].toString().replace(/,/g, ' ')
+      } else {
+        fieldName = props.listTableColumns[field]
+      }
+      modifiedRec[fieldName] = rec[field]
+      // modifiedRec[props.listTableColumns[field]] = rec[field]
     }
     dataForExport.push(modifiedRec)
   }
@@ -502,7 +509,10 @@ const exportFile = (dataSet, fileName, fileType) => {
       <table class="w-full">
         <tr class="" v-for="field in Object.keys(props.listTableColumns)">
           <td class="w-60 py-1 border-b font-semibold">
-            {{ props.listTableColumns[field] }}
+            <div v-if="typeof(props.listTableColumns[field])=='object'">
+              {{ props.listTableColumns[field].toString().replace(/,/g, ' ') }}
+            </div>
+            <div v-else>{{ props.listTableColumns[field] }}</div>
           </td>
           <td class="border-b">
             {{ selectedItem[field] }}
@@ -661,7 +671,14 @@ const exportFile = (dataSet, fileName, fileType) => {
           <div class="flex px-2 py-2 min-w-max">
             <div :class=sortArrowsStyle[field] @click="clickSortField2(field)"><i :class=sortIcon[field] style="font-size: 0.7rem"></i></div>
             <div :class=filterIconStyle[field] @click="clickFilter(field)"><i :class=filterIcon[field] style="font-size: 0.7rem"></i></div>
-            <div class="flex-1">{{ props.listTableColumns[field] }}</div>
+            <div v-if="typeof(props.listTableColumns[field])=='string'" class="flex-1">{{ props.listTableColumns[field] }}</div>
+
+            <div v-if="typeof(props.listTableColumns[field])=='object'" class="flex-1">
+              <div v-for="string_name in props.listTableColumns[field]">
+                {{ string_name }}
+              </div>
+            </div>
+
           </div>
 
           <div v-show="isListFilterShow[field]" class="absolute text-black text-sm font-semibold mt-1 ml-1
@@ -687,7 +704,7 @@ const exportFile = (dataSet, fileName, fileType) => {
           {{ item[field].slice(8, 10) }}/{{ item[field].slice(5, 7) }}/{{ item[field].slice(0, 4) }}
         </div> -->
         <!-- date columns -->
-        <div class="px-2 py-2 min-w-max" v-else-if="['Дата', 'Время'].some(el => props.listTableColumns[field].includes(el))">  
+        <div class="px-2 py-2 min-w-max" v-else-if="['Дата', 'Время'].some(el => props.listTableColumns[field].toString().includes(el))">  
           <!-- {{ item[field].slice(0,20) }} -->  <!-- min-w-max -->
           {{ item[field] }}
         </div>
