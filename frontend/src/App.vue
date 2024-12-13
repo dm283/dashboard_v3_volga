@@ -251,7 +251,7 @@ const changeTabValue = (n) => {
     
   <div class="mt-40 mx-auto bg-gray-50 border rounded-lg overflow-hidden">
     <div class="py-2 px-5 bg-blue-400 text-center text-white text-lg">
-      Dashboard | Витрина Свободного склада (СС)
+      Витрина Свободного склада (СС)
     </div>
     <form @submit.prevent="authSubmit" enctype="multipart/form-data" class="mx-5 mt-2 ">
       <div class="my-2">
