@@ -4,9 +4,9 @@ import List from '@/components/List.vue';
 
   
 const props = defineProps({
-  goodsMovementListName: String,
-  goodsMovementListAccountBook: Array,
-  goodsMovementListTableColumns: Object,
+  foreignGoodsListName: String,
+  foreignGoodsList: Array,
+  foreignGoodsListTableColumns: Object,
 });
 
 </script>
@@ -17,7 +17,7 @@ const props = defineProps({
 
     <div class="col-span-6">
       <div class="">
-        <List :name="goodsMovementListName" :data="goodsMovementListAccountBook" :listTableColumns="goodsMovementListTableColumns" />
+        <List :name="foreignGoodsListName" :data="foreignGoodsList" :listTableColumns="foreignGoodsListTableColumns" />
       </div>
     </div>
 

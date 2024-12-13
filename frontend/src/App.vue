@@ -37,27 +37,45 @@ const authFormMessage = ref('')
 
 
 // tables columns names
-const articulArticulListTableColumns = {
-    'catalog':'Код артикула','name':'Описание артикула','packs':'Кол-во','unit':'Ед.изм.',
-    'netto':'Вес нетто','status':'Статус','cell_id':'Размещение', 
-    'ngtd':'Номер ДТ', 'date':'Дата приема', 'g32':'№ тов.', 'g33':'Код ТНВЭД', 'guid_cat':'Уникальный номер артикула'
+const foreignGoodsListTableColumns = {
+'goods':		'Наименование товара',
+'g33':	'Код ТНВЭД',
+'nbux':		'Документ бух.учета',
+'ngtd':		'Номер ДТ',
+'packs':		'Кол-во учет',
+'ed_izm':		'Ед.изм.учет',
+'packs_dt':	'Кол-во ДТ',
+'g41a':		'Ед.изм.ДТ',
+'datebux':		'Дата размещ.',
+'naccount':	'№ субсчета',
+'packs_0':		'Тек.лстаток',
+'place':		'Место зранения',
+'packs_1':		'Передано в произ-во',
+'packs_2':		'Потребление',
+'packs_3':		'Списание (форсмажол)',
+'packs_4':		'Уничтожение (ст. 160 ФЗ-289)',
+'packs_5':		'Передача товара (п.9 ст.213 ТК ЕАЭС)',
+'packs_6':		'Изменение статуса (ч.6, ст. 160 ФЗ-289)',
+'packs_7':		'Помещение под иную ТП',
+'packs_8':		'Вывоз товаров (оборудования) (п.5 ст.213 ТК ЕАЭС)',
+'guid_cat':	'Номер идентификатора'
 }
 
-const arrivalGoodsArrivalListTableColumns = {
-  'ngtd': 'Номер ДТ', 'date': 'Дата приема', 'g32': '№ тов.','g33': 'Код ТНВЭД',
-    'g31': 'Наименование товара','g35': 'Вес брутто','g38': 'Вес нетто','g31_4': 'Кол.доп.ед',
-    'g41a': 'Ед.изм.', 'status': 'Статус товара', 'cell_id': 'Размещение сырья'
+const eaesGoodsListTableColumns = {
+'nn':		'№ п\п',
+'goods':		'Наименование товара',
+'g33':		'Код ТНВЭД',
+'status':		'Статус',
+'packs':		'Количество',
+'ed_izm':		'Ед.изм.',
+'ndoc':		'Наименование документа'
 }
 
-const goodsMovementListTableColumns = {
-  'ngtd':'Номер ДТ', 'g32':'№ тов.', 'g33':'Код ТНВЭД', 'g31':'Наименование товара', 'pin':'Кол-во пр.', 'pout':'Кол-во выд.',
-  'g41a':'Ед.изм.', 'g38in':'Прих.нетто', 'g38out':'Выд.нетто', 'status':'Статус товара'
-}
 
-const filterArrivalDateFrom = ref();
-const filterArrivalDateTo = ref();
-const filterGoodsMovementDateOpFrom = ref()
-const filterGoodsMovementDateOpTo = ref()
+const filterForeignGoodsDateFrom = ref();
+const filterForeignGoodsDateTo = ref();
+const filterEaesGoodsDateFrom = ref()
+const filterEaesGoodsDateTo = ref()
 
 const showFiltersBar = ref(false);
 
@@ -79,17 +97,8 @@ async function getData() {
   try {
       state.data = [];
 
-      state.articul = {};
-      state.articul.barTnved = {};
-      state.articul.barTnved.datax = [];
-      state.articul.barTnved.datay = [];
-
-      state.arrival = {};
-      state.arrival.barTnved = {};
-      state.arrival.barTnved.datax = [];
-      state.arrival.barTnved.datay = [];
-
-      state.goodsMovement = {};
+      state.foreignGoods = {};
+      state.eaesGoods = {};
 
       const response = await axios.get(`http://${backendIpAddress}:${backendPort}/dashboard/?`+filterSubstring.value, { headers: authHeader() });
 
@@ -108,23 +117,8 @@ async function getData() {
       state.companyName = state.data['company_name']
       state.updateDateTime = state.data['current_datetime']
 
-      state.articul.cardDtCnt = state.data['articul_dt_cnt'][0]['articul_dt_cnt'];
-      state.articul.cardArticulCnt = state.data['articul_articul_cnt'][0]['articul_articul_cnt'];
-      for (let i of state.data['articul_tnved']) {
-        state.articul.barTnved.datax.push(i['g33']);
-        state.articul.barTnved.datay.push(i['cnt'])
-      }   
-      state.articul.listArticul = state.data['articul_articul']
-
-      state.arrival.cardGoodsCnt = state.data['arrival_goods_cnt'][0]['arrival_goods_cnt'];
-      state.arrival.cardDtCnt = state.data['arrival_dt_cnt'][0]['arrival_dt_cnt'];
-      for (let i of state.data['arrival_tnved']) {
-        state.arrival.barTnved.datax.push(i['g33']);
-        state.arrival.barTnved.datay.push(i['cnt'])
-      }   
-      state.arrival.listGoodsArrival = state.data['arrival_goods_arrival']
-
-      state.goodsMovement.listGoodsMovement = state.data['goods_movement']
+      state.foreignGoods.listGoods = state.data['foreign_goods_list']
+      state.eaesGoods.listGoods = state.data['eaes_goods_list']
     } catch (error) {
       console.error('Error fetching items', error.response.status);
       if (error.response.status == 401) {
@@ -145,10 +139,10 @@ async function updateData() {
 const handleSubmit = async () => {
   //
   const filters = {
-    'filterArrivalDateFrom': filterArrivalDateFrom, 
-    'filterArrivalDateTo': filterArrivalDateTo, 
-    'filterGoodsMovementDateOpFrom': filterGoodsMovementDateOpFrom, 
-    'filterGoodsMovementDateOpTo': filterGoodsMovementDateOpTo, 
+    'filterForeignGoodsDateFrom': filterForeignGoodsDateFrom, 
+    'filterForeignGoodsDateTo': filterForeignGoodsDateTo, 
+    'filterEaesGoodsDateFrom': filterEaesGoodsDateFrom, 
+    'filterEaesGoodsDateTo': filterEaesGoodsDateTo, 
   }; 
   filterSubstring.value = '&';
   
@@ -169,10 +163,10 @@ onMounted(async () => {
 
 
 const clearFilters = async () => {
-  filterArrivalDateFrom.value = '';
-  filterArrivalDateTo.value = '';
-  filterGoodsMovementDateOpFrom.value = ''
-  filterGoodsMovementDateOpTo.value = ''
+  filterForeignGoodsDateFrom.value = '';
+  filterForeignGoodsDateTo.value = '';
+  filterEaesGoodsDateFrom.value = ''
+  filterEaesGoodsDateTo.value = ''
 
   state.isLoading = true;
   await handleSubmit();
@@ -320,27 +314,27 @@ const changeTabValue = (n) => {
 
     <form @submit.prevent="handleSubmit" class="mx-0 mt-3 ">
 
-      <div class="mt-5 mb-2 ml-3 font-semibold">ПРИХОД ТОВАРА</div>
+      <div class="mt-5 mb-2 ml-3 font-semibold">ИНОСТРАННЫЕ ТОВАРЫ</div>
 
       <div class="mx-5 mb-2">
-        <label class="formLabelStyle">Дата приёма</label>
+        <label class="formLabelStyle">Дата размещения</label>
         <div class="flex ">
           <div class="pt-1">c</div>
           <input
             type="date"
-            v-model="filterArrivalDateFrom"
-            id="filterArrivalDateFrom"
-            name="filterArrivalDateFrom"
-            :class="filterArrivalDateFrom ? 'formInputStyleFilled' : 'formInputStyle'"
+            v-model="filterForeignGoodsDateFrom"
+            id="filterForeignGoodsDateFrom"
+            name="filterForeignGoodsDateFrom"
+            :class="filterForeignGoodsDateFrom ? 'formInputStyleFilled' : 'formInputStyle'"
             placeholder=""
           />
           <div class="pt-1">по</div>
           <input
             type="date"
-            v-model="filterArrivalDateTo"
-            id="filterArrivalDateTo"
-            name="filterArrivalDateTo"
-            :class="filterArrivalDateTo ? 'formInputStyleFilled' : 'formInputStyle'"
+            v-model="filterForeignGoodsDateTo"
+            id="filterForeignGoodsDateTo"
+            name="filterForeignGoodsDateTo"
+            :class="filterForeignGoodsDateTo ? 'formInputStyleFilled' : 'formInputStyle'"
             placeholder=""
           />   
         </div>
@@ -348,27 +342,27 @@ const changeTabValue = (n) => {
 
       <hr class="mt-7"> 
 
-      <div class="mt-5 mb-2 ml-3 font-semibold">ДВИЖЕНИЕ ТОВАРА</div>
+      <div class="mt-5 mb-2 ml-3 font-semibold">ТОВАРЫ ЕАЭС</div>
 
       <div class="mx-5 mb-2">
-        <label class="formLabelStyle">Дата операции</label>
+        <label class="formLabelStyle">Дата</label>
         <div class="flex ">
           <div class="pt-1">c</div>
           <input
             type="date"
-            v-model="filterGoodsMovementDateOpFrom"
-            id="filterGoodsMovementDateOpFrom"
-            name="filterGoodsMovementDateOpFrom"
-            :class="filterGoodsMovementDateOpFrom ? 'formInputStyleFilled' : 'formInputStyle'"
+            v-model="filterEaesGoodsDateFrom"
+            id="filterEaesGoodsDateFrom"
+            name="filterEaesGoodsDateFrom"
+            :class="filterEaesGoodsDateFrom ? 'formInputStyleFilled' : 'formInputStyle'"
             placeholder=""
           />
           <div class="pt-1">по</div>
           <input
             type="date"
-            v-model="filterGoodsMovementDateOpTo"
-            id="filterGoodsMovementDateOpTo"
-            name="filterGoodsMovementDateOpTo"
-            :class="filterGoodsMovementDateOpTo ? 'formInputStyleFilled' : 'formInputStyle'"
+            v-model="filterEaesGoodsDateTo"
+            id="filterEaesGoodsDateTo"
+            name="filterEaesGoodsDateTo"
+            :class="filterEaesGoodsDateTo ? 'formInputStyleFilled' : 'formInputStyle'"
             placeholder=""
           />   
         </div>
@@ -402,7 +396,6 @@ const changeTabValue = (n) => {
 <nav class="bg-gradient-to-r from-sky-600 to-sky-400 px-10 py-3 text-white overflow-auto">  
   <div class="text-center lg:flex lg:float-left text-xl">
     <div class="inline-block px-4 border-r-2">{{ companyName }}</div>
-    <div class="inline-block px-4 border-r-2">Dashboard</div>
     <div class="inline-block px-4">Витрина Свободного склада (СС)</div>
   </div>
   <div class="text-center lg:flex lg:float-right">
@@ -429,25 +422,13 @@ const changeTabValue = (n) => {
     @change-tab="changeTabValue"
     :tabNumberVar = "tabNumberVar"
 
-    :articulBarTnvedDatax = "state.articul.barTnved.datax" 
-    :articulBarTnvedDatay="state.articul.barTnved.datay" 
-    :articulCardDtCnt="state.articul.cardDtCnt" 
-    :articulCardArticulCnt="state.articul.cardArticulCnt" 
-    :articulListName="'Артикул на складе'" 
-    :articulListArticul="state.articul.listArticul" 
-    :articulListTableColumns="articulArticulListTableColumns"
+    :foreignGoodsListName="'Иностранные товары'" 
+    :foreignGoodsList="state.foreignGoods.listGoods" 
+    :foreignGoodsListTableColumns="foreignGoodsListTableColumns"
 
-    :arrivalBarTnvedDatax = "state.arrival.barTnved.datax" 
-    :arrivalBarTnvedDatay="state.arrival.barTnved.datay" 
-    :arrivalCardGoodsCnt="state.arrival.cardGoodsCnt" 
-    :arrivalCardDtCnt="state.arrival.cardDtCnt" 
-    :arrivalListName="'Приход товара'" 
-    :arrivalListGoodsArrival="state.arrival.listGoodsArrival" 
-    :arrivalListTableColumns="arrivalGoodsArrivalListTableColumns"
-
-    :goodsMovementListName="'Движение товара по складу	'" 
-    :goodsMovementListAccountBook="state.goodsMovement.listGoodsMovement" 
-    :goodsMovementListTableColumns="goodsMovementListTableColumns"
+    :eaesGoodsListName="'Товары ЕАЭС'" 
+    :eaesGoodsList="state.eaesGoods.listGoods" 
+    :eaesGoodsListTableColumns="eaesGoodsListTableColumns"
   /> 
 
   <footer>
