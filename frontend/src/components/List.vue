@@ -514,7 +514,7 @@ const exportFile = (dataSet, fileName, fileType) => {
             </div>
             <div v-else>{{ props.listTableColumns[field] }}</div>
           </td>
-          <td class="border-b">
+          <td class="pl-3 border-b">
             {{ selectedItem[field] }}
           </td>
         </tr>
