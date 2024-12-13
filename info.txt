@@ -1,0 +1,18 @@
+===  install dashboard app  ===
+git clone https://github.com/dm283/dashboard_v3.git
+cd ....../backend
+python -m venv venv
+pip install -r requirements.txt
+cd ....../frontend
+npm install
+
+
+=== start/restart dashboard app ===
+1)  backend
+cd ....../backend
+venv\Script\activate
+uvicorn app.main:app --workers 1 --host 0.0.0.0 --port 8000
+
+2)  frontend
+cd ....../frontend
+npm run dev -- --host
