@@ -10,6 +10,8 @@ const props = defineProps({
   name: String,
   data: Array,
   listTableColumns: Object,
+  limitRecords: Number,
+  tableHeight: String,
 });
 
 const state = reactive({
@@ -18,7 +20,7 @@ const state = reactive({
   localData: [],
   dataForRender: [],
   currentPage: 1,
-  limitRecords: 14,
+  //limitRecords: 14,
   initRender: true,
 })
 
@@ -393,7 +395,7 @@ const checkState = () => {
 const computeRenderData = (action) => {
   //
   if (action == 'right') {
-    if (state.currentPage < Math.ceil(dataLengthRender() / state.limitRecords)) {
+    if (state.currentPage < Math.ceil(dataLengthRender() / props.limitRecords)) {
     // if (state.currentPage < (Math.floor(dataLengthRender() / state.limitRecords) + 1)) {
         state.currentPage++;
     }
@@ -407,7 +409,7 @@ const computeRenderData = (action) => {
     state.currentPage = 1;
   }
   else if (action == 'last') {
-    state.currentPage = Math.ceil(dataLengthRender() / state.limitRecords);
+    state.currentPage = Math.ceil(dataLengthRender() / props.limitRecords);
     // state.currentPage = Math.floor(dataLengthRender() / state.limitRecords) + 1;
   }
   
@@ -420,7 +422,7 @@ const dataRender = () => {
     loadLocalData();
   }
 
-  return state.localData.slice(state.limitRecords*(state.currentPage-1), state.limitRecords*state.currentPage) 
+  return state.localData.slice(props.limitRecords*(state.currentPage-1), props.limitRecords*state.currentPage) 
 
   // if (state.localData.length > 0) {
   //   return state.localData.slice(state.limitRecords*(state.currentPage-1), state.limitRecords*state.currentPage) 
@@ -508,13 +510,13 @@ const exportFile = (dataSet, fileName, fileType) => {
     <div class="h-4/5 m-7 text-sm overflow-auto">
       <table class="w-full">
         <tr class="" v-for="field in Object.keys(props.listTableColumns)">
-          <td class="w-60 py-1 border-b font-semibold">
+          <td class="w-60 py-1 border-b font-semibold text-slate-500">
             <div v-if="typeof(props.listTableColumns[field])=='object'">
               {{ props.listTableColumns[field].toString().replace(/,/g, ' ') }}
             </div>
             <div v-else>{{ props.listTableColumns[field] }}</div>
           </td>
-          <td class="pl-3 border-b">
+          <td class="pl-3 border-b font-semibold">
             {{ selectedItem[field] }}
           </td>
         </tr>
@@ -550,9 +552,9 @@ const exportFile = (dataSet, fileName, fileType) => {
     <div class="paginationBtn" @click="computeRenderData('left')">
       <i class="pi pi-angle-left" style="font-size: 1rem"></i>
     </div>
-    {{ (dataLengthRender()) ? state.limitRecords*(state.currentPage-1)+1 : 0 }}-{{ 
-      (state.limitRecords*state.currentPage < dataLengthRender()) 
-      ? state.limitRecords*state.currentPage : dataLengthRender() }} из {{ dataLengthRender() }}
+    {{ (dataLengthRender()) ? props.limitRecords*(state.currentPage-1)+1 : 0 }}-{{ 
+      (props.limitRecords*state.currentPage < dataLengthRender()) 
+      ? props.limitRecords*state.currentPage : dataLengthRender() }} из {{ dataLengthRender() }}
     <div class="paginationBtn" @click="computeRenderData('right')">
       <i class="pi pi-angle-right" style="font-size: 1rem"></i>
     </div>
@@ -721,27 +723,6 @@ const exportFile = (dataSet, fileName, fileType) => {
 </table>
 </section>
 
-<!-- ***************   PAGINATION BLOCK   ********************* -->
-<!-- <div id="paginationBlock" class="absolute bottom-2 right-3 overflow-auto pt-3 pb-2">
-<div class="float-right space-x-1.5">
-  <div class="paginationBtn" @click="computeRenderData('first')">
-    <i class="pi pi-angle-double-left" style="font-size: 1rem"></i>
-  </div>
-  <div class="paginationBtn" @click="computeRenderData('left')">
-    <i class="pi pi-angle-left" style="font-size: 1rem"></i>
-  </div>
-  {{ state.limitRecords*(state.currentPage-1)+1 }}-{{ 
-    (state.limitRecords*state.currentPage < dataLengthRender()) 
-    ? state.limitRecords*state.currentPage : dataLengthRender() }} of {{ dataLengthRender() }}
-  <div class="paginationBtn" @click="computeRenderData('right')">
-    <i class="pi pi-angle-right" style="font-size: 1rem"></i>
-  </div>
-  <div class="paginationBtn" @click="computeRenderData('last')">
-    <i class="pi pi-angle-double-right" style="font-size: 1rem"></i>
-  </div>
-</div>
-</div> -->
-
 </div>
 </div>
 </template>
@@ -749,7 +730,7 @@ const exportFile = (dataSet, fileName, fileType) => {
 
 <style lang="postcss" scope>
 .listArea {
-  height: 600px;
+  height: v-bind('props.tableHeight');
 }
 
 .paginationBtn {

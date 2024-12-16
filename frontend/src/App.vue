@@ -406,7 +406,7 @@ const changeTabValue = (n) => {
     <div class="inline-block px-4 text-base">{{ state.updateDateTime }}</div>
     <!-- 09-09-2024 17:30 -->
     <div class="header-btn"><i class="pi pi-refresh" style="font-size: 1.3rem" @click="updateData()"></i></div>
-    <div class="header-btn"><i class="pi pi-ellipsis-v" style="font-size: 1.3rem"></i></div>
+    <!-- <div class="header-btn"><i class="pi pi-ellipsis-v" style="font-size: 1.3rem"></i></div> -->
     <div class="header-btn"><i class="pi pi-sign-out" style="font-size: 1.3rem" @click="signOut()"></i></div>
     <div class="header-btn" @click="showFiltersBar=(showFiltersBar) ? false:true">
       <i class="pi pi-filter" style="font-size: 1.3rem"></i></div>
