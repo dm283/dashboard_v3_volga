@@ -254,7 +254,7 @@ const changeTabValue = (n) => {
 <div v-if="!isAuthorized" class="flex">
     
   <div class="mt-40 mx-auto bg-gray-50 border rounded-lg overflow-hidden">
-    <div class="py-2 px-5 bg-blue-400 text-center text-white text-lg">
+    <div class="py-2 px-5 bg-gradient-to-r from-sky-600 to-sky-400 text-center text-white text-lg">
       Витрина Свободного склада (СС)
     </div>
     <form @submit.prevent="authSubmit" enctype="multipart/form-data" class="mx-5 mt-2 ">
