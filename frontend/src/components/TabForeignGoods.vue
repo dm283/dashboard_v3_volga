@@ -17,7 +17,8 @@ const props = defineProps({
 
     <div class="col-span-6">
       <div class="">
-        <List :name="foreignGoodsListName" :data="foreignGoodsList" :listTableColumns="foreignGoodsListTableColumns" />
+        <List :name="foreignGoodsListName" :data="foreignGoodsList" :listTableColumns="foreignGoodsListTableColumns" 
+          :limitRecords="13" :tableHeight="'600px'" />
       </div>
     </div>
 

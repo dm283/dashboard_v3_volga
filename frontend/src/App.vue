@@ -53,11 +53,15 @@ const foreignGoodsListTableColumns = {
 'packs_1':		'Передано в произ-во',
 'packs_2':		'Потребление',
 'packs_3':		'Списание (форсмажор)',
-'packs_4':		'Уничтожение (ст. 160 ФЗ-289)',
-'packs_5':		'Передача товара (п.9 ст.213 ТК ЕАЭС)',
-'packs_6':		'Изменение статуса (ч.6, ст. 160 ФЗ-289)',
+'packs_4':		['Уничтожение', '(ст. 160 ФЗ-289)'],
+// 'packs_4':		'Уничтожение (ст. 160 ФЗ-289)',
+'packs_5':		['Передача товара', '(п.9 ст.213 ТК ЕАЭС)'],
+// 'packs_5':		'Передача товара (п.9 ст.213 ТК ЕАЭС)',
+'packs_6':		['Изменение статуса', '(ч.6, ст. 160 ФЗ-289)'],
+// 'packs_6':		'Изменение статуса (ч.6, ст. 160 ФЗ-289)',
 'packs_7':		'Помещение под иную ТП',
-'packs_8':		'Вывоз товаров (оборудования) (п.5 ст.213 ТК ЕАЭС)',
+'packs_8':		['Вывоз товаров', '(оборудования)', '(п.5 ст.213 ТК ЕАЭС)'],
+// 'packs_8':		'Вывоз товаров (оборудования) (п.5 ст.213 ТК ЕАЭС)',
 'guid_cat':	'Номер идентификатора'
 }
 
@@ -402,7 +406,7 @@ const changeTabValue = (n) => {
     <div class="inline-block px-4 text-base">{{ state.updateDateTime }}</div>
     <!-- 09-09-2024 17:30 -->
     <div class="header-btn"><i class="pi pi-refresh" style="font-size: 1.3rem" @click="updateData()"></i></div>
-    <div class="header-btn"><i class="pi pi-ellipsis-v" style="font-size: 1.3rem"></i></div>
+    <!-- <div class="header-btn"><i class="pi pi-ellipsis-v" style="font-size: 1.3rem"></i></div> -->
     <div class="header-btn"><i class="pi pi-sign-out" style="font-size: 1.3rem" @click="signOut()"></i></div>
     <div class="header-btn" @click="showFiltersBar=(showFiltersBar) ? false:true">
       <i class="pi pi-filter" style="font-size: 1.3rem"></i></div>
