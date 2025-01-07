@@ -75,11 +75,51 @@ const eaesGoodsListTableColumns = {
 'ndoc':		'Наименование документа'
 }
 
+const productedGoodsListTableColumns = {
+'nn':		'№ п/п',
+'goods':		'Наименование товара',
+'g33':		'Код ТНВЭД',
+'status':		'Статус',
+'packs':		'Кол-во',
+'ed_izm':		'Ед.изм.',
+'ndoc':		'№ документа',
+'datedoc':		'Дата док-та',
+'goods1':		'Наименование сырья',
+'g331':		'ТНВЭД сырья',
+'status1':		'Статус сырья',
+'packs1':		'Кол-во сырья',
+'ed_izm1':		'Ед.изм.сырья',
+'ndoc1':		'№ док.сырья',
+'datedoc1':	'Дата док.сырья',
+'guid_cat':	'ID изг.товара'
+}
+
+const ispolProductedGoodsListTableColumns = {
+'nn':		'№ п\п',
+'goods':		'Наименование товара',
+'g33':		'Код ТНВЭД',
+'packs':		'Количество',
+'ed_izm':		'Ед.изм.',
+'treg':		'Код.там.процедуры',
+'status':		'Статус товара',
+'ndoc':		['№ документа', 'заключения'],
+'datedoc':	['Дата док.', 'заключения'],
+'ngtd':		'№ ДТ',
+'packs1':		['Иное использ.', 'кол-во'],
+'ed_izm1':		['Иное использ.', 'Ед.изм.'],
+'comment':		'Примечание'
+}
+
 
 const filterForeignGoodsDateFrom = ref();
 const filterForeignGoodsDateTo = ref();
 const filterEaesGoodsDateFrom = ref()
 const filterEaesGoodsDateTo = ref()
+
+const filterProductedGoodsDateFrom = ref();
+const filterProductedGoodsDateTo = ref();
+const filterIspolProductedGoodsDateFrom = ref()
+const filterIspolProductedGoodsDateTo = ref()
 
 const showFiltersBar = ref(false);
 
@@ -103,6 +143,8 @@ async function getData() {
 
       state.foreignGoods = {};
       state.eaesGoods = {};
+      state.productedGoods = {};
+      state.ispolProductedGoods = {};
 
       const response = await axios.get(`http://${backendIpAddress}:${backendPort}/dashboard/?`+filterSubstring.value, { headers: authHeader() });
 
@@ -123,6 +165,10 @@ async function getData() {
 
       state.foreignGoods.listGoods = state.data['foreign_goods_list']
       state.eaesGoods.listGoods = state.data['eaes_goods_list']
+
+      state.productedGoods.listGoods = state.data['producted_goods_list']
+      state.ispolProductedGoods.listGoods = state.data['ispol_producted_goods_list']
+
     } catch (error) {
       console.error('Error fetching items', error.response.status);
       if (error.response.status == 401) {
@@ -147,6 +193,11 @@ const handleSubmit = async () => {
     'filterForeignGoodsDateTo': filterForeignGoodsDateTo, 
     'filterEaesGoodsDateFrom': filterEaesGoodsDateFrom, 
     'filterEaesGoodsDateTo': filterEaesGoodsDateTo, 
+
+    'filterProductedGoodsDateFrom': filterProductedGoodsDateFrom, 
+    'filterProductedGoodsDateTo': filterProductedGoodsDateTo, 
+    'filterIspolProductedGoodsDateFrom': filterIspolProductedGoodsDateFrom, 
+    'filterIspolProductedGoodsDateTo': filterIspolProductedGoodsDateTo, 
   }; 
   filterSubstring.value = '&';
   
@@ -171,6 +222,11 @@ const clearFilters = async () => {
   filterForeignGoodsDateTo.value = '';
   filterEaesGoodsDateFrom.value = ''
   filterEaesGoodsDateTo.value = ''
+
+  filterProductedGoodsDateFrom.value = '';
+  filterProductedGoodsDateTo.value = '';
+  filterIspolProductedGoodsDateFrom.value = ''
+  filterIspolProductedGoodsDateTo.value = ''
 
   state.isLoading = true;
   await handleSubmit();
@@ -349,7 +405,7 @@ const changeTabValue = (n) => {
       <div class="mt-5 mb-2 ml-3 font-semibold">ТОВАРЫ ЕАЭС</div>
 
       <div class="mx-5 mb-2">
-        <label class="formLabelStyle">Дата</label>
+        <label class="formLabelStyle">Дата документа</label>
         <div class="flex ">
           <div class="pt-1">c</div>
           <input
@@ -373,6 +429,65 @@ const changeTabValue = (n) => {
       </div>
 
       <hr class="mt-7">
+
+
+      <div class="mt-5 mb-2 ml-3 font-semibold">ИЗГ.ТОВАРЫ, СЫРЬЕ</div>
+
+      <div class="mx-5 mb-2">
+        <label class="formLabelStyle">Дата документа</label>
+        <div class="flex ">
+          <div class="pt-1">c</div>
+          <input
+            type="date"
+            v-model="filterProductedGoodsDateFrom"
+            id="filterProductedGoodsDateFrom"
+            name="filterProductedGoodsDateFrom"
+            :class="filterProductedGoodsDateFrom ? 'formInputStyleFilled' : 'formInputStyle'"
+            placeholder=""
+          />
+          <div class="pt-1">по</div>
+          <input
+            type="date"
+            v-model="filterProductedGoodsDateTo"
+            id="filterProductedGoodsDateTo"
+            name="filterProductedGoodsDateTo"
+            :class="filterProductedGoodsDateTo ? 'formInputStyleFilled' : 'formInputStyle'"
+            placeholder=""
+          />   
+        </div>
+      </div>
+
+      <hr class="mt-7">
+
+
+      <div class="mt-5 mb-2 ml-3 font-semibold">ИСПОЛ.ИЗГ.ТОВАРОВ</div>
+
+      <div class="mx-5 mb-2">
+        <label class="formLabelStyle">Дата по бухгалтерии</label>
+        <div class="flex ">
+          <div class="pt-1">c</div>
+          <input
+            type="date"
+            v-model="filterIspolProductedGoodsDateFrom"
+            id="filterIspolProductedGoodsDateFrom"
+            name="filterIspolProductedGoodsDateFrom"
+            :class="filterIspolProductedGoodsDateFrom ? 'formInputStyleFilled' : 'formInputStyle'"
+            placeholder=""
+          />
+          <div class="pt-1">по</div>
+          <input
+            type="date"
+            v-model="filterIspolProductedGoodsDateTo"
+            id="filterIspolProductedGoodsDateTo"
+            name="filterIspolProductedGoodsDateTo"
+            :class="filterIspolProductedGoodsDateTo ? 'formInputStyleFilled' : 'formInputStyle'"
+            placeholder=""
+          />   
+        </div>
+      </div>
+
+      <hr class="mt-7">
+
 
       <div class="mt-7 flex justify-center space-x-5 py-3 px-5 text-center">
         <button
@@ -433,6 +548,15 @@ const changeTabValue = (n) => {
     :eaesGoodsListName="'Товары ЕАЭС'" 
     :eaesGoodsList="state.eaesGoods.listGoods" 
     :eaesGoodsListTableColumns="eaesGoodsListTableColumns"
+
+    :productedGoodsListName="'Изг.товары, сырье'" 
+    :productedGoodsList="state.productedGoods.listGoods" 
+    :productedGoodsListTableColumns="productedGoodsListTableColumns"
+
+    :ispolProductedGoodsListName="'Испол.изг.товаров'" 
+    :ispolProductedGoodsList="state.ispolProductedGoods.listGoods" 
+    :ispolProductedGoodsListTableColumns="ispolProductedGoodsListTableColumns"
+
   /> 
 
   <footer>
