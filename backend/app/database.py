@@ -1,3 +1,4 @@
+# selects from database
 import sys, os, configparser, pyodbc
 from pathlib import Path
 from abc import ABC, abstractmethod
