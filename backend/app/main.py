@@ -248,17 +248,11 @@ async def get_dashboard_data_filtered(
         filterEaesGoodsDateFrom: Union[str, None] = None,
         filterEaesGoodsDateTo: Union[str, None] = None,
 
-        # filterArrivalDateFrom: Union[str, None] = None,
-        # filterArrivalDateTo: Union[str, None] = None,
-        # filterGoodsMovementDateOpFrom: Union[str, None] = None,
-        # filterGoodsMovementDateOpTo: Union[str, None] = None,
+        filterProductedGoodsDateFrom: Union[str, None] = None,
+        filterProductedGoodsDateTo: Union[str, None] = None,
+        filterIspolProductedGoodsDateFrom: Union[str, None] = None,
+        filterIspolProductedGoodsDateTo: Union[str, None] = None,
 
-        # filterAccountBookDateDocFrom: Union[str, None] = None,
-        # filterAccountBookDateDocTo: Union[str, None] = None,
-        # filterAccountBookDateEnterFrom: Union[str, None] = None,
-        # filterAccountBookDateEnterTo: Union[str, None] = None,
-        # filterReportVehicleDateEnterFrom: Union[str, None] = None,
-        # filterReportVehicleDateExitTo: Union[str, None] = None,
         ):
     
     # if IS_AUTH_REQUIRED and (not token or token not in TOKEN_LIST):
@@ -281,10 +275,11 @@ async def get_dashboard_data_filtered(
             "filterForeignGoodsDateTo": filterForeignGoodsDateTo,
             "filterEaesGoodsDateFrom": filterEaesGoodsDateFrom,
             "filterEaesGoodsDateTo": filterEaesGoodsDateTo,
-            # "filterAccountBookDateEnterFrom": filterAccountBookDateEnterFrom,
-            # "filterAccountBookDateEnterTo": filterAccountBookDateEnterTo,
-            # "filterReportVehicleDateEnterFrom": filterReportVehicleDateEnterFrom,
-            # "filterReportVehicleDateExitTo": filterReportVehicleDateExitTo,
+
+            "filterProductedGoodsDateFrom": filterProductedGoodsDateFrom,
+            "filterProductedGoodsDateTo": filterProductedGoodsDateTo,
+            "filterIspolProductedGoodsDateFrom": filterIspolProductedGoodsDateFrom,
+            "filterIspolProductedGoodsDateTo": filterIspolProductedGoodsDateTo,
                 }
 
         return select_dashboard_data(

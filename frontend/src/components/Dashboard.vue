@@ -2,6 +2,8 @@
 import { ref, defineProps, computed, reactive } from 'vue';
 import TabForeignGoods from '@/components/TabForeignGoods.vue';
 import TabEaesGoods from '@/components/TabEaesGoods.vue';
+import TabProductedGoods from '@/components/TabProductedGoods.vue';
+import TabIspolProductedGoods from '@/components/TabIspolProductedGoods.vue';
 
   
 const props = defineProps({
@@ -14,6 +16,14 @@ const props = defineProps({
   eaesGoodsListName: String,
   eaesGoodsList: Array,
   eaesGoodsListTableColumns: Object,
+
+  productedGoodsListName: String,
+  productedGoodsList: Array,
+  productedGoodsListTableColumns: Object,
+
+  ispolProductedGoodsListName: String,
+  ispolProductedGoodsList: Array,
+  ispolProductedGoodsListTableColumns: Object,
 });
 
 const emit = defineEmits(['changeTab']) // emit
@@ -36,6 +46,12 @@ const toggleTabs = (tabNumber) => {
     <div :class="{'navTabsSelected': openTab == 2, 'navTabs': openTab != 2}" @click="toggleTabs(2)">
       Товары ЕАЭС
     </div>
+    <div :class="{'navTabsSelected': openTab == 3, 'navTabs': openTab != 3}" @click="toggleTabs(3)">
+      Изг.товары, сырье
+    </div>
+    <div :class="{'navTabsSelected': openTab == 4, 'navTabs': openTab != 4}" @click="toggleTabs(4)">
+      Испол.изг.товаров
+    </div>
   </nav>
 
   <div id="dashboardContent" class="">
@@ -51,6 +67,20 @@ const toggleTabs = (tabNumber) => {
         :eaesGoodsListName="eaesGoodsListName" 
         :eaesGoodsList="eaesGoodsList" 
         :eaesGoodsListTableColumns="eaesGoodsListTableColumns"
+      />
+    </div>
+    <div v-if="openTab == 3">
+      <TabProductedGoods
+        :productedGoodsListName="productedGoodsListName" 
+        :productedGoodsList="productedGoodsList" 
+        :productedGoodsListTableColumns="productedGoodsListTableColumns"
+      />
+    </div>
+    <div v-if="openTab == 4">
+      <TabIspolProductedGoods
+        :ispolProductedGoodsListName="ispolProductedGoodsListName" 
+        :ispolProductedGoodsList="ispolProductedGoodsList" 
+        :ispolProductedGoodsListTableColumns="ispolProductedGoodsListTableColumns"
       />
     </div>
   </div>
