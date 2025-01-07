@@ -74,7 +74,7 @@ select['foreign_goods_list'] = f"""
 # 2.1  Товары ЕАЭС		Список
 select['eaes_goods_list'] = f"""
   SELECT nn,goods,g33,status,namedoc+' '+ndoc+' '+CONVERT(VARCHAR,datedoc,105) ndoc,packs,ed_izm
-    FROM REG_TOV_EA 
+    FROM {DB_NAME}.{DB_SCHEMA}.REG_TOV_EA 
     WHERE 1=1 {filter_string_mark}
     ORDER BY nn 
 """
@@ -83,7 +83,7 @@ select['eaes_goods_list'] = f"""
 # 3.1  Изг.товары, сырье  Список
 select['producted_goods_list'] = f"""
   SELECT nn,goods,g33,status,packs,ed_izm,ndoc,datedoc,goods1,g331,status1,packs1,ed_izm1,ndoc1,datedoc1,guid_cat
-    FROM MANF_TOV
+    FROM {DB_NAME}.{DB_SCHEMA}.MANF_TOV
     WHERE 1=1 {filter_string_mark}
     ORDER BY nn,status1,datedoc1
 """
@@ -92,7 +92,7 @@ select['producted_goods_list'] = f"""
 # 4.1  Испол.изг.товаров	Список
 select['ispol_producted_goods_list'] = f"""
   SELECT nn,goods,g33,packs,ed_izm,treg,status,ndoc,datedoc,ngtd,packs1,ed_izm1,comment
-    FROM MANF_TOV_DT 
+    FROM {DB_NAME}.{DB_SCHEMA}.MANF_TOV_DT 
     WHERE 1=1 {filter_string_mark}
     ORDER BY nn 
 """
