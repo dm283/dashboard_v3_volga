@@ -549,11 +549,11 @@ const changeTabValue = (n) => {
     :eaesGoodsList="state.eaesGoods.listGoods" 
     :eaesGoodsListTableColumns="eaesGoodsListTableColumns"
 
-    :productedGoodsListName="'Изг.товары, сырье'" 
+    :productedGoodsListName="'Изготовленные товары, использованное сырье'" 
     :productedGoodsList="state.productedGoods.listGoods" 
     :productedGoodsListTableColumns="productedGoodsListTableColumns"
 
-    :ispolProductedGoodsListName="'Испол.изг.товаров'" 
+    :ispolProductedGoodsListName="'Использование изготовленных товаров'" 
     :ispolProductedGoodsList="state.ispolProductedGoods.listGoods" 
     :ispolProductedGoodsListTableColumns="ispolProductedGoodsListTableColumns"
 
