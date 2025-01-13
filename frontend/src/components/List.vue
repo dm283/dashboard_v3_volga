@@ -447,7 +447,7 @@ const dataLengthRender= () => {
 
 
 const exportFile = (dataSet, fileName, fileType) => {
-  //
+  // export list data to file
   if (!dataSet) return;
 
   // leave in dataset only columns from listTableColumns and rename cols in rus
