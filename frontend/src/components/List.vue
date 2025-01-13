@@ -450,6 +450,7 @@ const dataLengthRender= () => {
 const exportFileXlsx = async(dataSet, fileName) => {
   console.log('EXPORT TO EXCEL')
 
+  const columns = [];
   const HEADER_ROW = [];
   for (let field of Object.keys(props.listTableColumns)) {
     let fieldName = ''
@@ -458,12 +459,13 @@ const exportFileXlsx = async(dataSet, fileName) => {
     } else {
       fieldName = props.listTableColumns[field]
     }
-    HEADER_ROW.push({value: fieldName, fontWeight: 'bold', backgroundColor: '#aabbcc'})
+    HEADER_ROW.push({value: fieldName, fontWeight: 'bold', backgroundColor: '#aabbcc', align: 'center'})
+    columns.push({ width: (fieldName.length + 2) })
   };
 
   const data = [
     HEADER_ROW,
-  ]
+  ];
 
   for (let rec of dataSet) {
     let dataRow = [];
@@ -472,12 +474,13 @@ const exportFileXlsx = async(dataSet, fileName) => {
       dataRow.push({value:value})
     }
     data.push(dataRow)
-  }
+  };
 
-  await writeXlsxFile(data, {
-  //columns, // (optional) column widths, etc.
-  fileName: fileName
-})
+  await writeXlsxFile(
+    data, {
+      columns, // (optional) column widths, etc.
+      fileName: fileName
+  });
 
 }
 
