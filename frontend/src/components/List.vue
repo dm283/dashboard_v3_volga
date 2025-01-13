@@ -4,6 +4,7 @@ import 'primeicons/primeicons.css';
 // import router from '@/router';
 import axios from 'axios';
 import { utils, writeFileXLSX, writeFile } from 'xlsx';
+import writeXlsxFile from 'write-excel-file'
 
 
 const props = defineProps({
@@ -446,9 +447,49 @@ const dataLengthRender= () => {
 }
 
 
+const exportFileXlsx = async(dataSet, fileName) => {
+  console.log('EXPORT TO EXCEL')
+
+  const HEADER_ROW = [];
+  for (let field of Object.keys(props.listTableColumns)) {
+    let fieldName = ''
+    if (typeof(props.listTableColumns[field])=='object') {
+      fieldName = props.listTableColumns[field].toString().replace(/,/g, ' ')
+    } else {
+      fieldName = props.listTableColumns[field]
+    }
+    HEADER_ROW.push({value: fieldName, fontWeight: 'bold', backgroundColor: '#aabbcc'})
+  };
+
+  const data = [
+    HEADER_ROW,
+  ]
+
+  for (let rec of dataSet) {
+    let dataRow = [];
+    for (let field of Object.keys(props.listTableColumns)) {
+      let value = rec[field];
+      dataRow.push({value:value})
+    }
+    data.push(dataRow)
+  }
+
+  await writeXlsxFile(data, {
+  //columns, // (optional) column widths, etc.
+  fileName: fileName
+})
+
+}
+
+
 const exportFile = (dataSet, fileName, fileType) => {
   // export list data to file
   if (!dataSet) return;
+
+  if (fileType == 'xlsx') {
+    exportFileXlsx(dataSet, fileName);
+    return;
+  }
 
   // leave in dataset only columns from listTableColumns and rename cols in rus
   let dataForExport = []
@@ -472,25 +513,24 @@ const exportFile = (dataSet, fileName, fileType) => {
         fieldName = props.listTableColumns[field]
       }
       modifiedRec[fieldName] = rec[field]
-      // modifiedRec[props.listTableColumns[field]] = rec[field]
     }
     dataForExport.push(modifiedRec)
   }
 
-  //const ws = utils.json_to_sheet(dataSet);
   const ws = utils.json_to_sheet(dataForExport);
   const wb = utils.book_new();
   utils.book_append_sheet(wb, ws, "dashboard_data");
 
-  if (fileType == 'xlsx') {
-    writeFileXLSX(wb, fileName.trim() + ".xlsx");
-  } 
-  else if (fileType == 'xls') {
-    writeFile(wb, fileName.trim() + ".xls");
-  }
-  else if (fileType == 'csv') {
+
+  if (fileType == 'csv') {
     writeFile(wb, fileName.trim() + ".csv", { FS: ";" });
-  }    
+  }  
+  // else if (fileType == 'xlsx') {
+  //   writeFileXLSX(wb, fileName.trim() + ".xlsx");
+  // } 
+  // else if (fileType == 'xls') {
+  //   writeFile(wb, fileName.trim() + ".xls");
+  // }
 };
 
 </script>
@@ -584,7 +624,7 @@ const exportFile = (dataSet, fileName, fileType) => {
       bg-white text-xs font-semilbold absolute z-10 overflow-hidden">
       <ul @click="toggleDropdown('download')">
         <li class="h-8 pl-3 py-1.5 uppercase cursor-pointer hover:bg-gray-100" 
-           @click="exportFile(dataSet=state.localData, fileName='dashboard_data', fileType=option)" v-for="option in ['xlsx', 'xls', 'csv']">{{ option }}</li>
+           @click="exportFile(dataSet=state.localData, fileName='dashboard_data', fileType=option)" v-for="option in ['xlsx', 'csv']">{{ option }}</li>
       </ul>
     </div>
   </div>
