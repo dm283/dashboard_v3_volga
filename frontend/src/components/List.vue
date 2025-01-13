@@ -447,11 +447,21 @@ const dataLengthRender= () => {
 
 
 const exportFile = (dataSet, fileName, fileType) => {
-  //
+  // export list data to file
   if (!dataSet) return;
 
   // leave in dataset only columns from listTableColumns and rename cols in rus
   let dataForExport = []
+
+  if (dataSet.length == 0) {
+    // define empty dataset with column names
+    dataSet = [];
+    dataSet[0] = {};
+    for (let spaceField of Object.keys(props.listTableColumns)) {
+      dataSet[0][spaceField] = ''
+    }
+  }
+
   for (let rec of dataSet) {
     let modifiedRec = {}
     for (let field of Object.keys(props.listTableColumns)) {
