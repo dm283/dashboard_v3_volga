@@ -447,6 +447,19 @@ const dataLengthRender= () => {
 }
 
 
+function longestString(arr) {
+    let longestString = "";
+    for (let i = 0; i < arr.length; i++) {
+        if (
+            typeof arr[i] === "string" &&
+            arr[i].length > longestString.length
+        ) {
+            longestString = arr[i];
+        }
+    }
+    return longestString;
+}
+
 const exportFileXlsx = async(dataSet, fileName) => {
   console.log('EXPORT TO EXCEL')
 
@@ -454,13 +467,16 @@ const exportFileXlsx = async(dataSet, fileName) => {
   const HEADER_ROW = [];
   for (let field of Object.keys(props.listTableColumns)) {
     let fieldName = ''
+    let columnWidth = 0
     if (typeof(props.listTableColumns[field])=='object') {
-      fieldName = props.listTableColumns[field].toString().replace(/,/g, ' ')
+      fieldName = props.listTableColumns[field].toString().replace(/,/g, '\n')
+      columnWidth = longestString(props.listTableColumns[field]).length + 2
     } else {
       fieldName = props.listTableColumns[field]
+      columnWidth = (fieldName.length + 2)
     }
-    HEADER_ROW.push({value: fieldName, fontWeight: 'bold', backgroundColor: '#aabbcc', align: 'center'})
-    columns.push({ width: (fieldName.length + 2) })
+    HEADER_ROW.push({value: fieldName, fontWeight: 'bold', backgroundColor: '#aabbcc', align: 'center', alignVertical: 'center', wrap: true})
+    columns.push({ width: columnWidth })
   };
 
   const data = [
