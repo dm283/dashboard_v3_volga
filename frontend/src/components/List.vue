@@ -739,7 +739,7 @@ const exportFile = (dataSet, fileName, fileType) => {
       <td class="border" v-for="(field, index) in Object.keys(props.listTableColumns)">
       
         <div class="relative">
-          <div class="flex px-2 py-2 w-max">
+          <div class="flex px-2 py-2 min-w-max border">
             <div :class=sortArrowsStyle[field] @click="clickSortField2(field)"><i :class=sortIcon[field] style="font-size: 0.7rem"></i></div>
             <div :class=filterIconStyle[field] @click="clickFilter(field)"><i :class=filterIcon[field] style="font-size: 0.7rem"></i></div>
             <div v-if="typeof(props.listTableColumns[field])=='string'" class="flex-1">{{ props.listTableColumns[field] }}</div>
