@@ -4,10 +4,11 @@ import TabForeignGoods from '@/components/TabForeignGoods.vue';
 import TabEaesGoods from '@/components/TabEaesGoods.vue';
 import TabProductedGoods from '@/components/TabProductedGoods.vue';
 import TabIspolProductedGoods from '@/components/TabIspolProductedGoods.vue';
+import TabMulti from '@/components/TabMulti.vue';
 
   
 const props = defineProps({
-  tabNumberVar: 1,
+  tabNumberVar: 5,
 
   foreignGoodsListName: String,
   foreignGoodsList: Array,
@@ -40,7 +41,7 @@ const toggleTabs = (tabNumber) => {
 <template>
   
   <nav class="border flex bg-blue-50 text-indigo-500">
-    <div :class="{'navTabsSelected': openTab == 1, 'navTabs': openTab != 1}" @click="toggleTabs(1)">
+    <!-- <div :class="{'navTabsSelected': openTab == 1, 'navTabs': openTab != 1}" @click="toggleTabs(1)">
       Иностранные товары
     </div>
     <div :class="{'navTabsSelected': openTab == 2, 'navTabs': openTab != 2}" @click="toggleTabs(2)">
@@ -51,6 +52,9 @@ const toggleTabs = (tabNumber) => {
     </div>
     <div :class="{'navTabsSelected': openTab == 4, 'navTabs': openTab != 4}" @click="toggleTabs(4)">
       Испол.изг.товаров
+    </div> -->
+    <div :class="{'navTabsSelected': openTab == 5, 'navTabs': openTab != 5}" @click="toggleTabs(5)">
+      Товары под процедурой
     </div>
   </nav>
 
@@ -81,6 +85,11 @@ const toggleTabs = (tabNumber) => {
         :ispolProductedGoodsListName="ispolProductedGoodsListName" 
         :ispolProductedGoodsList="ispolProductedGoodsList" 
         :ispolProductedGoodsListTableColumns="ispolProductedGoodsListTableColumns"
+      />
+    </div>
+    <div v-if="openTab == 5">
+      <TabMulti
+        :multiListName="'multiListName'" 
       />
     </div>
   </div>
