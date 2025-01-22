@@ -10,6 +10,9 @@ import TabMulti from '@/components/TabMulti.vue';
 const props = defineProps({
   tabNumberVar: 5,
 
+  filterProcGoodsDateFrom: String,
+  filterProcGoodsDateTo: String,
+
   foreignGoodsListName: String,
   foreignGoodsList: Array,
   foreignGoodsListTableColumns: Object,
@@ -90,6 +93,8 @@ const toggleTabs = (tabNumber) => {
     <div v-if="openTab == 5">
       <TabMulti
         :multiListName="'multiListName'" 
+        :filterProcGoodsDateFrom="filterProcGoodsDateFrom"
+        :filterProcGoodsDateTo="filterProcGoodsDateTo"
       />
     </div>
   </div>

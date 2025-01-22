@@ -110,6 +110,8 @@ const ispolProductedGoodsListTableColumns = {
 'comment':		'Примечание'
 }
 
+const filterProcGoodsDateFrom = ref('2025-01-01');
+const filterProcGoodsDateTo = ref(new Date().toISOString().slice(0, 10));
 
 const filterForeignGoodsDateFrom = ref();
 const filterForeignGoodsDateTo = ref();
@@ -188,6 +190,7 @@ async function updateData() {
 
 const handleSubmit = async () => {
   //
+  console.log(filterProcGoodsDateFrom.value, filterProcGoodsDateTo.value) ///
   const filters = {
     'filterForeignGoodsDateFrom': filterForeignGoodsDateFrom, 
     'filterForeignGoodsDateTo': filterForeignGoodsDateTo, 
@@ -218,6 +221,9 @@ onMounted(async () => {
 
 
 const clearFilters = async () => {
+  filterProcGoodsDateFrom.value = '2025-01-01';
+  filterProcGoodsDateTo.value = new Date().toISOString().slice(0, 10);
+
   filterForeignGoodsDateFrom.value = '';
   filterForeignGoodsDateTo.value = '';
   filterEaesGoodsDateFrom.value = ''
@@ -374,7 +380,35 @@ const changeTabValue = (n) => {
 
     <form @submit.prevent="handleSubmit" class="mx-0 mt-3 ">
 
-      <div class="mt-5 mb-2 ml-3 font-semibold">ИНОСТРАННЫЕ ТОВАРЫ</div>
+      <div class="mt-5 mb-2 ml-3 font-semibold">ТОВАРЫ ПОД ПРОЦЕДУРОЙ</div>
+
+      <div class="mx-5 mb-2">
+        <label class="formLabelStyle">Дата отчёта</label>
+        <div class="flex ">
+          <div class="pt-1">c</div>
+          <input
+            type="date"
+            v-model="filterProcGoodsDateFrom"
+            id="filterProcGoodsDateFrom"
+            name="filterProcGoodsDateFrom"
+            :class="filterProcGoodsDateFrom ? 'formInputStyleFilled' : 'formInputStyle'"
+            placeholder="dd-mm-yyyy"
+          />
+          <div class="pt-1">по</div>
+          <input
+            type="date"
+            v-model="filterProcGoodsDateTo"
+            id="filterProcGoodsDateTo"
+            name="filterProcGoodsDateTo"
+            :class="filterProcGoodsDateTo ? 'formInputStyleFilled' : 'formInputStyle'"
+            placeholder=""
+          />   
+        </div>
+      </div>
+
+      <hr class="mt-7"> 
+
+      <!-- <div class="mt-5 mb-2 ml-3 font-semibold">ИНОСТРАННЫЕ ТОВАРЫ</div>
 
       <div class="mx-5 mb-2">
         <label class="formLabelStyle">Дата размещения</label>
@@ -486,7 +520,7 @@ const changeTabValue = (n) => {
         </div>
       </div>
 
-      <hr class="mt-7">
+      <hr class="mt-7"> -->
 
 
       <div class="mt-7 flex justify-center space-x-5 py-3 px-5 text-center">
@@ -523,8 +557,7 @@ const changeTabValue = (n) => {
     <div class="header-btn"><i class="pi pi-refresh" style="font-size: 1.3rem" @click="updateData()"></i></div>
     <!-- <div class="header-btn"><i class="pi pi-ellipsis-v" style="font-size: 1.3rem"></i></div> -->
     <div class="header-btn"><i class="pi pi-sign-out" style="font-size: 1.3rem" @click="signOut()"></i></div>
-    <div class="header-btn" @click="">
-    <!-- <div class="header-btn" @click="showFiltersBar=(showFiltersBar) ? false:true"> -->
+    <div class="header-btn" @click="showFiltersBar=(showFiltersBar) ? false:true">
       <i class="pi pi-filter" style="font-size: 1.3rem"></i></div>
   </div>
 </nav>
@@ -541,6 +574,9 @@ const changeTabValue = (n) => {
   <Dashboard 
     @change-tab="changeTabValue"
     :tabNumberVar = "tabNumberVar"
+
+    :filterProcGoodsDateFrom="filterProcGoodsDateFrom"
+    :filterProcGoodsDateTo="filterProcGoodsDateTo"
 
     :foreignGoodsListName="'Иностранные товары'" 
     :foreignGoodsList="state.foreignGoods.listGoods" 

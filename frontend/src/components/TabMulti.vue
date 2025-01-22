@@ -5,6 +5,8 @@ import ListMulti from '@/components/ListMulti.vue';
   
 const props = defineProps({
   multiListName: String,
+  filterProcGoodsDateFrom: String,
+  filterProcGoodsDateTo: String,
 });
 
 </script>
@@ -15,7 +17,7 @@ const props = defineProps({
 
     <div class="col-span-6">
       <div class="">
-        <ListMulti :name="multiListName"/>
+        <ListMulti :name="multiListName" :filterProcGoodsDateFrom="filterProcGoodsDateFrom" :filterProcGoodsDateTo="filterProcGoodsDateTo"/>
       </div>
     </div>
 
