@@ -13,7 +13,7 @@ const props = defineProps({
 
 <template>
   
-  <div class="grid grid-cols-6 gap-3 m-2 mb-12">
+  <div class="grid grid-cols-6 gap-3 m-2 mb-8">
 
     <div class="col-span-6">
       <div class="">
