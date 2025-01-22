@@ -6,6 +6,8 @@ import axios from 'axios';
 
 const props = defineProps({
   name: String,
+  filterProcGoodsDateFrom: String,
+  filterProcGoodsDateTo: String,
 });
 
 </script>
@@ -59,6 +61,13 @@ const props = defineProps({
     </div> -->
   </div>
 
+</div>
+
+<div class="flex text-sm font-semibold text-slate-400">
+  <div class="">Дата отчёта</div> 
+  <div class="ml-1">{{ props.filterProcGoodsDateFrom.slice(8, 10) }}/{{ props.filterProcGoodsDateFrom.slice(5, 7) }}/{{ props.filterProcGoodsDateFrom.slice(0, 4) }}
+    - {{ props.filterProcGoodsDateTo.slice(8, 10) }}/{{ props.filterProcGoodsDateTo.slice(5, 7) }}/{{ props.filterProcGoodsDateTo.slice(0, 4) }}
+  </div>
 </div>
 
 </nav>
