@@ -113,6 +113,12 @@ const ispolProductedGoodsListTableColumns = {
 const filterProcGoodsDateFrom = ref('2025-01-01');
 const filterProcGoodsDateTo = ref(new Date().toISOString().slice(0, 10));
 
+const filterProcGoodsDate2From = ref('2025-01-01');
+const filterProcGoodsDate2To = ref(new Date().toISOString().slice(0, 10));
+
+const filterProcGoodsDate3From = ref('2025-01-01');
+const filterProcGoodsDate3To = ref(new Date().toISOString().slice(0, 10));
+
 const filterForeignGoodsDateFrom = ref();
 const filterForeignGoodsDateTo = ref();
 const filterEaesGoodsDateFrom = ref()
@@ -223,6 +229,12 @@ onMounted(async () => {
 const clearFilters = async () => {
   filterProcGoodsDateFrom.value = '2025-01-01';
   filterProcGoodsDateTo.value = new Date().toISOString().slice(0, 10);
+
+  filterProcGoodsDate2From.value = '2025-01-01';
+  filterProcGoodsDate2To.value = new Date().toISOString().slice(0, 10);
+
+  filterProcGoodsDate3From.value = '2025-01-01';
+  filterProcGoodsDate3To.value = new Date().toISOString().slice(0, 10);
 
   filterForeignGoodsDateFrom.value = '';
   filterForeignGoodsDateTo.value = '';
@@ -408,6 +420,62 @@ const changeTabValue = (n) => {
 
       <hr class="mt-7"> 
 
+      <div class="mt-5 mb-2 ml-3 font-semibold">ТОВАРЫ ИЗГОТОВЛЕННЫЕ (ПОЛУЧЕННЫЕ)</div>
+
+      <div class="mx-5 mb-2">
+        <label class="formLabelStyle">Дата отчёта</label>
+        <div class="flex ">
+          <div class="pt-1">c</div>
+          <input
+            type="date"
+            v-model="filterProcGoodsDate2From"
+            id="filterProcGoodsDate2From"
+            name="filterProcGoodsDate2From"
+            :class="filterProcGoodsDate2From ? 'formInputStyleFilled' : 'formInputStyle'"
+            placeholder="dd-mm-yyyy"
+          />
+          <div class="pt-1">по</div>
+          <input
+            type="date"
+            v-model="filterProcGoodsDate2To"
+            id="filterProcGoodsDate2To"
+            name="filterProcGoodsDate2To"
+            :class="filterProcGoodsDate2To ? 'formInputStyleFilled' : 'formInputStyle'"
+            placeholder=""
+          />   
+        </div>
+      </div>
+
+      <hr class="mt-7"> 
+
+      <div class="mt-5 mb-2 ml-3 font-semibold">ИСПОЛЬЗОВАНИЕ ТОВАРОВ</div>
+
+      <div class="mx-5 mb-2">
+        <label class="formLabelStyle">Дата отчёта</label>
+        <div class="flex ">
+          <div class="pt-1">c</div>
+          <input
+            type="date"
+            v-model="filterProcGoodsDate3From"
+            id="filterProcGoodsDate3From"
+            name="filterProcGoodsDate3From"
+            :class="filterProcGoodsDate3From ? 'formInputStyleFilled' : 'formInputStyle'"
+            placeholder="dd-mm-yyyy"
+          />
+          <div class="pt-1">по</div>
+          <input
+            type="date"
+            v-model="filterProcGoodsDate3To"
+            id="filterProcGoodsDate3To"
+            name="filterProcGoodsDate3To"
+            :class="filterProcGoodsDate3To ? 'formInputStyleFilled' : 'formInputStyle'"
+            placeholder=""
+          />   
+        </div>
+      </div>
+
+      <hr class="mt-7"> 
+
       <!-- <div class="mt-5 mb-2 ml-3 font-semibold">ИНОСТРАННЫЕ ТОВАРЫ</div>
 
       <div class="mx-5 mb-2">
@@ -577,6 +645,12 @@ const changeTabValue = (n) => {
 
     :filterProcGoodsDateFrom="filterProcGoodsDateFrom"
     :filterProcGoodsDateTo="filterProcGoodsDateTo"
+
+    :filterProcGoodsDate2From="filterProcGoodsDate2From"
+    :filterProcGoodsDate2To="filterProcGoodsDate2To"
+
+    :filterProcGoodsDate3From="filterProcGoodsDate3From"
+    :filterProcGoodsDate3To="filterProcGoodsDate3To"
 
     :foreignGoodsListName="'Иностранные товары'" 
     :foreignGoodsList="state.foreignGoods.listGoods" 

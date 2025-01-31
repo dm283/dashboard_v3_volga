@@ -5,6 +5,8 @@ import TabEaesGoods from '@/components/TabEaesGoods.vue';
 import TabProductedGoods from '@/components/TabProductedGoods.vue';
 import TabIspolProductedGoods from '@/components/TabIspolProductedGoods.vue';
 import TabMulti from '@/components/TabMulti.vue';
+import TabMulti2 from '@/components/TabMulti2.vue';
+import TabMulti3 from '@/components/TabMulti3.vue';
 
   
 const props = defineProps({
@@ -12,6 +14,12 @@ const props = defineProps({
 
   filterProcGoodsDateFrom: String,
   filterProcGoodsDateTo: String,
+
+  filterProcGoodsDate2From: String,
+  filterProcGoodsDate2To: String,
+
+  filterProcGoodsDate3From: String,
+  filterProcGoodsDate3To: String,
 
   foreignGoodsListName: String,
   foreignGoodsList: Array,
@@ -59,6 +67,12 @@ const toggleTabs = (tabNumber) => {
     <div :class="{'navTabsSelected': openTab == 5, 'navTabs': openTab != 5}" @click="toggleTabs(5)">
       Товары под процедурой
     </div>
+    <div :class="{'navTabsSelected': openTab == 6, 'navTabs': openTab != 6}" @click="toggleTabs(6)">
+      Товары изготовленные (полученные)
+    </div>
+    <div :class="{'navTabsSelected': openTab == 7, 'navTabs': openTab != 7}" @click="toggleTabs(7)">
+      Использование товаров
+    </div>
   </nav>
 
   <div id="dashboardContent" class="">
@@ -95,6 +109,20 @@ const toggleTabs = (tabNumber) => {
         :multiListName="'multiListName'" 
         :filterProcGoodsDateFrom="filterProcGoodsDateFrom"
         :filterProcGoodsDateTo="filterProcGoodsDateTo"
+      />
+    </div>
+    <div v-if="openTab == 6">
+      <TabMulti2
+        :multiListName="'multiListName2'" 
+        :filterProcGoodsDateFrom="filterProcGoodsDate2From"
+        :filterProcGoodsDateTo="filterProcGoodsDate2To"
+      />
+    </div>
+    <div v-if="openTab == 7">
+      <TabMulti3
+        :multiListName="'multiListName3'" 
+        :filterProcGoodsDateFrom="filterProcGoodsDate3From"
+        :filterProcGoodsDateTo="filterProcGoodsDate3To"
       />
     </div>
   </div>
