@@ -1,293 +1,251 @@
-import sys, json
-from datetime import datetime, timedelta, timezone
-from typing import Annotated, Union
-from pathlib import Path
-from fastapi import FastAPI, status, Depends
+import os
+from datetime import datetime
+from fastapi import FastAPI, status, UploadFile, Form, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.exceptions import HTTPException
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-import jwt
-from jwt.exceptions import InvalidTokenError
+from fastapi.security import OAuth2PasswordRequestForm
+from typing import Annotated
+from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError
 from passlib.context import CryptContext
-from pydantic import BaseModel
-from app.database import (select_dashboard_data, )
-
-
-# to get a string like this run:
-# openssl rand -hex 32
-SECRET_KEY = "09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7"
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
-
-BASE_DIR = Path(__file__).resolve().parent.parent.parent
-users_file = BASE_DIR / 'data/users/users_list.json'
-
-try:
-    #  при отсутствии файла с пользователями вход без страницы аутентификации
-    with open(users_file, 'r') as jsonfile:
-        USERS_LIST = json.load(jsonfile)  # type = dict
-    # IS_AUTH_REQUIRED = True
-    # IS_AUTHORIZED = False
-    # print('THE FILE HAS FOUNDED, AUTH IS REQUIRED!', USERS_LIST)
-except FileNotFoundError:
-    # IS_AUTH_REQUIRED = False
-    # IS_AUTHORIZED = True
-    # print('THE FILE HAS NOT FOUNDED, AUTH IS NOT REQUIRED!')
-    print('Users file is not founded! Exit script.')
-    sys.exit()
-
-
-fake_users_db = USERS_LIST
-
-class Token(BaseModel):
-    access_token: str
-    token_type: str
-
-class TokenData(BaseModel):
-    username: str | None = None
-
-class User(BaseModel):
-    username: str
-    email: str | None = None
-    full_name: str | None = None
-    disabled: bool | None = None
-
-class UserInDB(User):
-    hashed_password: str
-
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+from app import models, schemas
+from app.database import engine
+from app.auth_section import get_db, Token, post_token, UserAuth, get_current_active_user, get_user_by_login, get_user
+from app.service_functions import redefine_schema_values_to_none, load_excel
 
 app = FastAPI()
+origins = ["*",]
+app.add_middleware(CORSMiddleware, allow_origins=origins, allow_credentials=True, allow_methods=["*"], allow_headers=["*"], )
 
-origins = [
-    "*",
-    # "http://localhost",
-    # "http://127.0.0.1",
-    # "http://localhost:8000",
-    # "http://localhost:8080",
-    # "http://localhost:5173",
-    # "http://127.0.0.1:5173",
-]
+models.Base.metadata.create_all(bind=engine)   # creates db tables
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-
-def verify_password(plain_password, hashed_password):
+# create token endpoint
+@app.post("/token")
+async def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], 
+                                 db: Session=Depends(get_db)) -> Token:
     #
-    return plain_password == hashed_password
-    # return pwd_context.verify(plain_password, hashed_password)
+    return post_token(form_data, db)
 
 
-def get_password_hash(password):
-    return pwd_context.hash(password)
-
-
-def get_user(db, username: str):
-    if username in db:
-        user_dict = db[username]
-        return UserInDB(**user_dict)
-
-
-def authenticate_user(fake_db, username: str, password: str):
-    user = get_user(fake_db, username)
-    if not user:
-        return False
-    if not verify_password(password, user.hashed_password):
-        return False
-    return user
-
-
-def create_access_token(data: dict, expires_delta: timedelta | None = None):
-    to_encode = data.copy()
-    if expires_delta:
-        expire = datetime.now(timezone.utc) + expires_delta
-    else:
-        expire = datetime.now(timezone.utc) + timedelta(minutes=15)
-    to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
-    return encoded_jwt
-
-
-async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        username: str = payload.get("sub")
-        if username is None:
-            raise credentials_exception
-        token_data = TokenData(username=username)
-    except InvalidTokenError:
-        raise credentials_exception
-    user = get_user(fake_users_db, username=token_data.username)
-    if user is None:
-        raise credentials_exception
-    return user
-
-
-async def get_current_active_user(
-    current_user: Annotated[User, Depends(get_current_user)],
-):
-    if current_user.disabled:
-        raise HTTPException(status_code=400, detail="Inactive user")
-    return current_user
-
-
+# check fastapi is active endpoint
 @app.get('/')
 async def index():
     return {'message': 'fastapi server is working'}
 
 
-@app.post("/token")
-async def login_for_access_token(
-    form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
-) -> Token:
-    user = authenticate_user(fake_users_db, form_data.username, form_data.password)
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username or password",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = create_access_token(
-        data={"sub": user.username}, expires_delta=access_token_expires
-    )
-    return Token(access_token=access_token, token_type="bearer")
-
-
-@app.get("/users/me/", response_model=User)
-async def read_users_me(
-    current_user: Annotated[User, Depends(get_current_active_user)],
-):
-    return current_user
-
-
-@app.get("/users/me/items/")
-async def read_own_items(
-    current_user: Annotated[User, Depends(get_current_active_user)],
-):
-    return [{"item_id": "Foo", "owner": current_user.username}]
-
-
-######################
-# @app.post('/dashboard/signin', status_code=status.HTTP_202_ACCEPTED)
-# async def user_sign_in(
-#     login: Union[str, None] = None,
-#     password: Union[str, None] = None,
-# ):
-#     # user authentification
-#     # global IS_AUTHORIZED
-    
-#     # print(f'!!!!!! post request = *{login}* *{password}*') ######
-
-#     if not IS_AUTH_REQUIRED:
-#         return {'message': 'authorization is not required'}
-    
-#     # if IS_AUTH_REQUIRED and IS_AUTHORIZED:
-#     #     return {'message': 'authorization has already done'}
-
-#     if (not login) or (not password):
-#         raise HTTPException(
-#             status_code=401,
-#             detail='Incorrect username or password',
-#         )
-        
-#     if login in USERS_LIST and USERS_LIST[login] == password:
-#         # IS_AUTHORIZED = True
-
-#         new_token = str(random.randint(1, 1000000))
-#         TOKEN_LIST.append(new_token)
-#         # print('new_token, TOKEN_LIST =', new_token, TOKEN_LIST) ##
-
-#         # return {'user': login}
-#         return {'your_new_token': new_token}
-#     else:
-#         raise HTTPException(
-#             status_code=401,
-#             detail='Incorrect username or password',
-#         )
-    
-
-# @app.post('/dashboard/signout', status_code=status.HTTP_200_OK)
-# async def user_sign_out(
-#     token: Union[str, None] = None,
-# ):
-#     # user sign out
-#     # global IS_AUTHORIZED
-
-#     if IS_AUTH_REQUIRED:
-#         # IS_AUTHORIZED = False
-        
-#         # print('token =', token)  ## 
-#         TOKEN_LIST.remove(token)
-#         # print('removed, updated TOKEN_LIST =', TOKEN_LIST)  ##
-        
-#         return {'message': 'signed out'}
-#     else:
-#         return {'message': 'there was not an authorization'}
-
-
-@app.get('/dashboard/', status_code=status.HTTP_200_OK)
-async def get_dashboard_data_filtered(
-        current_user: Annotated[User, Depends(get_current_active_user)],
-        # token: Union[str, None] = None,
-        filterForeignGoodsDateFrom: Union[str, None] = None,
-        filterForeignGoodsDateTo: Union[str, None] = None,
-        filterEaesGoodsDateFrom: Union[str, None] = None,
-        filterEaesGoodsDateTo: Union[str, None] = None,
-
-        filterProductedGoodsDateFrom: Union[str, None] = None,
-        filterProductedGoodsDateTo: Union[str, None] = None,
-        filterIspolProductedGoodsDateFrom: Union[str, None] = None,
-        filterIspolProductedGoodsDateTo: Union[str, None] = None,
-
-        ):
-    
-    # if IS_AUTH_REQUIRED and (not token or token not in TOKEN_LIST):
-    #     raise HTTPException(
-    #         status_code=401,
-    #         detail='Unauthorized',
-    #     )
-    
-    # if IS_AUTH_REQUIRED and (not IS_AUTHORIZED):
-    #     raise HTTPException(
-    #         status_code=401,
-    #         detail='Unauthorized',
-    #     )
-    
-    # return {'message': 'ok! data is received'}
-
+#########################################################    SERVICE ENDPOINTS
+# upload file excel
+@app.put("/upload_file/")
+async def upload_file(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                    entity: Annotated[str, Form()], file: UploadFile, db: Session = Depends(get_db)):
     try:
-        filters = {
-            "filterForeignGoodsDateFrom": filterForeignGoodsDateFrom,
-            "filterForeignGoodsDateTo": filterForeignGoodsDateTo,
-            "filterEaesGoodsDateFrom": filterEaesGoodsDateFrom,
-            "filterEaesGoodsDateTo": filterEaesGoodsDateTo,
-
-            "filterProductedGoodsDateFrom": filterProductedGoodsDateFrom,
-            "filterProductedGoodsDateTo": filterProductedGoodsDateTo,
-            "filterIspolProductedGoodsDateFrom": filterIspolProductedGoodsDateFrom,
-            "filterIspolProductedGoodsDateTo": filterIspolProductedGoodsDateTo,
-                }
-
-        return select_dashboard_data(
-            #selects_keys_list=['received_product_quantity', 'received_dt_quantity', 'received_tnved_quantity', 'account_book', 'report_vehicle'], 
-            filters=filters)
+        filecontent = file.file.read()
+        if not os.path.exists('uploaded_files'):
+            os.makedirs("uploaded_files")
+        file_location = f"uploaded_files/{file.filename}"
+        with open(file_location, "wb+") as file_object:
+            file_object.write(filecontent)
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f'Error {e}'
+        msg = {'status': 'error', 'message': 'file uploading or saving error', 'exception': str(e)}
+        print(msg)
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f'ошибка загрузки или сохранения файла на сервере')
+
+    load_res = load_excel(entity, file_location, db=db)
+
+    return load_res
+
+
+#########################################################    GET LIST OF ITEMS ENDPOINTS
+@app.get("/goods_under_procedure/", response_model=list[schemas.GoodsUnderProcedure])
+def read_records(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                  skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    #
+    return db.query(models.GoodsUnderProcedure).order_by(models.GoodsUnderProcedure.created_datetime.desc()).offset(skip).limit(limit).all()
+    
+
+@app.get("/goods_produced/", response_model=list[schemas.GoodsProduced])
+def read_records(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                  skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    #
+    return db.query(models.GoodsProduced).order_by(models.GoodsProduced.created_datetime.desc()).offset(skip).limit(limit).all()
+
+
+@app.get("/goods_usage/", response_model=list[schemas.GoodsUsage])
+def read_records(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                  skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    #
+    return db.query(models.GoodsUsage).order_by(models.GoodsUsage.created_datetime.desc()).offset(skip).limit(limit).all()
+
+
+#########################################################    CREATE ITEM ENDPOINTS
+def create_item(data, db, model, schema):
+    #
+    data_none_values_redefined = redefine_schema_values_to_none(data, schema)
+    db_item = model(**data_none_values_redefined.model_dump())
+    try:
+        db.add(db_item); db.commit(); db.refresh(db_item)
+    except Exception as err:
+        print(err)
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
+    return db_item
+
+
+@app.post("/goods_under_procedure/", response_model=schemas.GoodsUnderProcedure)
+def create_new_item(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                   data: Annotated[schemas.GoodsUnderProcedureCreate, Form()], db: Session = Depends(get_db)):
+    #
+    return create_item(data=data, db=db, model=models.GoodsUnderProcedure, schema=schemas.GoodsUnderProcedureCreate)
+
+
+@app.post("/goods_produced/", response_model=schemas.GoodsProduced)
+def create_new_item(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                   data: Annotated[schemas.GoodsProducedCreate, Form()], db: Session = Depends(get_db)):
+    #
+    return create_item(data=data, db=db, model=models.GoodsProduced, schema=schemas.GoodsProducedCreate)
+
+
+@app.post("/goods_usage/", response_model=schemas.GoodsUsage)
+def create_new_item(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                   data: Annotated[schemas.GoodsUsageCreate, Form()], db: Session = Depends(get_db)):
+    #
+    return create_item(data=data, db=db, model=models.GoodsUsage, schema=schemas.GoodsUsageCreate)
+
+
+#########################################################    DELETE ITEM ENDPOINTS
+def delete_item(db: Session, item_id: int, model):
+    #
+    item_from_db =  db.query(model).filter(model.id==item_id).first()
+    if item_from_db is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+    
+    try:
+        db.delete(item_from_db)
+        db.flush()
+    except IntegrityError as err:
+        db.rollback()
+        table_name = err.args[0].partition('таблицы "')[2].partition('"\n')[0]
+        msg_detail = f'Ошибка при удалении - есть связанные объекты в таблице {table_name}'
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=msg_detail)
+    db.commit()
+
+    return {"message": f"id {item_id} deleted successfully"}
+
+
+@app.delete('/goods_under_procedure/{item_id}')
+def delete_i(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                   item_id: int, db: Session = Depends(get_db)):
+    #
+    return delete_item(db=db, item_id=item_id, model=models.GoodsUnderProcedure)
+
+
+@app.delete('/goods_produced/{item_id}')
+def delete_i(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                   item_id: int, db: Session = Depends(get_db)):
+    #
+    return delete_item(db=db, item_id=item_id, model=models.GoodsProduced)
+
+
+@app.delete('/goods_usage/{item_id}')
+def delete_i(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                   item_id: int, db: Session = Depends(get_db)):
+    #
+    return delete_item(db=db, item_id=item_id, model=models.GoodsUsage)
+
+
+#########################################################    USERS ENDPOINTS
+# def get_user_by_login(db: Session, login: str):
+#     #
+#     return db.query(models.User).filter(models.User.login==login).first()
+
+@app.post("/users/", response_model=schemas.User)
+def create_user(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                data: Annotated[schemas.UserCreate, Form()], db: Session = Depends(get_db)):
+    #
+    data_none_values_redefined = redefine_schema_values_to_none(data, schemas.UserCreate)
+    if get_user_by_login(db, login=data_none_values_redefined.login):
+        raise HTTPException(status_code=400, detail="Login already registered")
+    password_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+    created_datetime = datetime.now()
+    hashed_password=password_context.hash(data_none_values_redefined.password)
+    db_user = models.User(
+        **data_none_values_redefined.model_dump(exclude='password'),
+        hashed_password=hashed_password, 
+        created_datetime=created_datetime
         )
-    #'received_product_quantity', 'received_dt_quantity', 'received_tnved_quantity', 
+    db.add(db_user); db.commit(); db.refresh(db_user)
+    return db_user
+
+
+@app.get("/users/", response_model=list[schemas.User])
+def read_users(current_user: Annotated[UserAuth, Depends(get_current_active_user)], 
+               skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    #
+    return db.query(models.User).order_by(models.User.created_datetime.desc()).offset(skip).limit(limit).all()
+
+
+@app.get("/users/{user_id}", response_model=schemas.User)
+def read_user(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+              user_id: int, db: Session = Depends(get_db)):
+    #
+    db_user = db.query(models.User).filter(models.User.id == user_id).first()
+    if db_user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    return db_user
+
+
+@app.get("/users/by_name/{username}", response_model=schemas.User)
+def read_user_by_name(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+              username: str, db: Session = Depends(get_db)):
+    #
+    db_user = get_user(username=username, db=db)
+    if db_user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    return db_user
+
+
+@app.put('/users/{item_id}', response_model=schemas.User)
+def update_user(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                         item_id: int, data: Annotated[schemas.UserCreate, Form()], db: Session = Depends(get_db)):
+    #
+    updated_datetime = datetime.now()
+    data_none_values_redefined = redefine_schema_values_to_none(data, schemas.UserCreate)
+    item = schemas.UserUpdate(**data_none_values_redefined.model_dump(), updated_datetime=updated_datetime)
+
+    item_from_db =  db.query(models.User).filter(models.User.id == item_id).first()
+    if item_from_db is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+    
+    for field, value in item.model_dump(exclude_unset=True).items():
+        setattr(item_from_db, field, value)
+    db.commit()
+
+    # password change
+    new_pwd=data_none_values_redefined.password
+    if new_pwd:
+        password_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+        hashed_password=password_context.hash(new_pwd)
+        setattr(item_from_db, 'hashed_password', hashed_password)
+        db.commit()
+
+    return item_from_db
+
+
+@app.delete('/users/{item_id}')
+def delete_user(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                   item_id: int, db: Session = Depends(get_db)):
+    #
+    item_from_db =  db.query(models.User).filter(models.User.id == item_id).first()
+    if item_from_db is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+    
+    try:
+        db.delete(item_from_db)
+        db.flush()
+    except IntegrityError as err:
+        db.rollback()
+        table_name = err.args[0].partition('таблицы "')[2].partition('"\n')[0]
+        msg_detail = f'Ошибка при удалении - есть связанные объекты в таблице {table_name}'
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=msg_detail)
+    db.commit()
+
+    return {"message": f"User id {item_id} deleted successfully"}
