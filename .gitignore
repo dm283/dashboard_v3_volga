@@ -32,6 +32,7 @@ coverage
 backend/app/__pycache__/
 backend/venv/
 backend/logs/
+backend/uploaded_files/
 backend/config.ini
 
 todo.txt
