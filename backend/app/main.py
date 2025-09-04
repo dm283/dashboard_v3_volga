@@ -1,4 +1,3 @@
-import os
 from datetime import datetime
 from fastapi import FastAPI, status, UploadFile, Form, Depends
 from fastapi.middleware.cors import CORSMiddleware
@@ -12,7 +11,8 @@ import pandas as pd
 from app import models, schemas
 from app.database import engine
 from app.auth_section import get_db, Token, post_token, UserAuth, get_current_active_user, get_user_by_login, get_user
-from app.service_functions import redefine_schema_values_to_none, upload_n_save_excel, read_excel
+from app.service_functions import redefine_schema_values_to_none, upload_n_save_excel, excel_to_dataframe, transform_dataframe
+from app.excel_metadata import sheets_list, header, sections, model, schema
 
 app = FastAPI()
 origins = ["*",]
@@ -35,34 +35,39 @@ async def index():
 
 
 #########################################################    SERVICE ENDPOINTS
-def df_to_db(df: pd.DataFrame, db: Session):
+def dataframe_to_db(df: pd.DataFrame, db: Session, model, schema):
     #
     try:
         for index, row in df.iterrows():
             dict_row = row.to_dict()
             for i in dict_row:
                 dict_row[i] = str(dict_row[i])
-            data = schemas.GoodsUsageCreate(**dict_row)
-            data_none_values_redefined = redefine_schema_values_to_none(data, schemas.GoodsUsageCreate)
+            data = schema(**dict_row)
+            data_none_values_redefined = redefine_schema_values_to_none(data, schema)
             # prevalidation = schemas.ContactValidation(**data_none_values_redefined.model_dump())
-            res = create_item(data=data_none_values_redefined, db=db, model=models.GoodsUsage, schema=schemas.GoodsUsageCreate)
+            res = create_item(data=data_none_values_redefined, db=db, model=model, schema=schema)
     except Exception as e:
         msg = {'status': 'error', 'message': f'создано {index} объектов, на строке {index+1} ошибка контента', 'exception': str(e)}
         print(msg)
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f'создано объектов - {index}, на строке {index+1} ошибка контента')
     
-    return {'status_code': status.HTTP_201_CREATED, 'detail': f'ok. создано объектов - {index+1}'}
+    return f'ok, создано объектов - {index+1}'
 
 
 # upload file excel
 @app.put("/upload_file/")
 async def upload_file(current_user: Annotated[UserAuth, Depends(get_current_active_user)], 
                       file: UploadFile, db: Session = Depends(get_db)):
-    
+    #
     file_location = upload_n_save_excel(file)
-    df = read_excel(file_location)
-    
-    return df_to_db(df, db)
+    message = ''
+    for sheet_name in sheets_list:
+        df = excel_to_dataframe(file_location=file_location, sheet_name=sheet_name, header=header[sheet_name])
+        if sections[sheet_name]:
+            df = transform_dataframe(df=df, sections=sections[sheet_name])
+        msg = dataframe_to_db(df=df, db=db, model=model[sheet_name], schema=schema[sheet_name])
+        message += (sheet_name + ' - ' + msg + '; ')
+    return {'status_code': status.HTTP_201_CREATED, 'detail': message}
 
 
 #########################################################    GET LIST OF ITEMS ENDPOINTS
@@ -163,10 +168,6 @@ def delete_i(current_user: Annotated[UserAuth, Depends(get_current_active_user)]
 
 
 #########################################################    USERS ENDPOINTS
-# def get_user_by_login(db: Session, login: str):
-#     #
-#     return db.query(models.User).filter(models.User.login==login).first()
-
 @app.post("/users/", response_model=schemas.User)
 def create_user(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                 data: Annotated[schemas.UserCreate, Form()], db: Session = Depends(get_db)):
