@@ -29,6 +29,18 @@ class GoodsUsage(Base):
     id = Column(Integer, primary_key=True)
     x1 = Column(String, default='0')
     x2 = Column(String, default='0')
+    x3 = Column(String, default='0')
+    x4 = Column(String, default='0')
+    x5 = Column(String, default='0')
+    x6 = Column(String, default='0')
+    x7 = Column(String, default='0')
+    x8 = Column(String, default='0')
+    x9 = Column(String, default='0')
+    x10 = Column(String, default='0')
+    x11 = Column(String, default='0')
+    x12 = Column(String, default='0')
+    x13 = Column(String, default='0')
+    x14 = Column(String, default='0')
     created_datetime = Column(DateTime, default=datetime.datetime.now())
 
 

@@ -29,6 +29,18 @@ class GoodsProduced(GoodsProducedCreate):
 class GoodsUsageCreate(BaseModel):
     x1: str | None = None
     x2: str | None = None
+    x3: str | None = None
+    x4: str | None = None
+    x5: str | None = None
+    x6: str | None = None
+    x7: str | None = None
+    x8: str | None = None
+    x9: str | None = None
+    x10: str | None = None
+    x11: str | None = None
+    x12: str | None = None
+    x13: str | None = None
+    x14: str | None = None
 
 class GoodsUsage(GoodsUsageCreate):
     id: int

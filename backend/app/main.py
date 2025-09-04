@@ -8,10 +8,11 @@ from typing import Annotated
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 from passlib.context import CryptContext
+import pandas as pd
 from app import models, schemas
 from app.database import engine
 from app.auth_section import get_db, Token, post_token, UserAuth, get_current_active_user, get_user_by_login, get_user
-from app.service_functions import redefine_schema_values_to_none, load_excel
+from app.service_functions import redefine_schema_values_to_none, upload_n_save_excel, read_excel
 
 app = FastAPI()
 origins = ["*",]
@@ -34,25 +35,34 @@ async def index():
 
 
 #########################################################    SERVICE ENDPOINTS
+def df_to_db(df: pd.DataFrame, db: Session):
+    #
+    try:
+        for index, row in df.iterrows():
+            dict_row = row.to_dict()
+            for i in dict_row:
+                dict_row[i] = str(dict_row[i])
+            data = schemas.GoodsUsageCreate(**dict_row)
+            data_none_values_redefined = redefine_schema_values_to_none(data, schemas.GoodsUsageCreate)
+            # prevalidation = schemas.ContactValidation(**data_none_values_redefined.model_dump())
+            res = create_item(data=data_none_values_redefined, db=db, model=models.GoodsUsage, schema=schemas.GoodsUsageCreate)
+    except Exception as e:
+        msg = {'status': 'error', 'message': f'создано {index} объектов, на строке {index+1} ошибка контента', 'exception': str(e)}
+        print(msg)
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f'создано объектов - {index}, на строке {index+1} ошибка контента')
+    
+    return {'status_code': status.HTTP_201_CREATED, 'detail': f'ok. создано объектов - {index+1}'}
+
+
 # upload file excel
 @app.put("/upload_file/")
-async def upload_file(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                    entity: Annotated[str, Form()], file: UploadFile, db: Session = Depends(get_db)):
-    try:
-        filecontent = file.file.read()
-        if not os.path.exists('uploaded_files'):
-            os.makedirs("uploaded_files")
-        file_location = f"uploaded_files/{file.filename}"
-        with open(file_location, "wb+") as file_object:
-            file_object.write(filecontent)
-    except Exception as e:
-        msg = {'status': 'error', 'message': 'file uploading or saving error', 'exception': str(e)}
-        print(msg)
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f'ошибка загрузки или сохранения файла на сервере')
-
-    load_res = load_excel(entity, file_location, db=db)
-
-    return load_res
+async def upload_file(current_user: Annotated[UserAuth, Depends(get_current_active_user)], 
+                      file: UploadFile, db: Session = Depends(get_db)):
+    
+    file_location = upload_n_save_excel(file)
+    df = read_excel(file_location)
+    
+    return df_to_db(df, db)
 
 
 #########################################################    GET LIST OF ITEMS ENDPOINTS
