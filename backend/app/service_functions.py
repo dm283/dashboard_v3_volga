@@ -47,7 +47,6 @@ def load_excel(entity, file_location, db):
                 # prevalidation = schemas.ContactValidation(**data_none_values_redefined.model_dump())
                 # print('prevalidation =', prevalidation)
                 # res = crud.create_contact(db=db, item=data_none_values_redefined)
-                # res = crud.posting_contact(db=db, item_id=res.id)
                 cnt += 1
     except Exception as e:
         msg = {'status': 'error', 'message': f'создано {cnt} объектов, на строке {cnt+1} ошибка контента', 'exception': str(e)}
